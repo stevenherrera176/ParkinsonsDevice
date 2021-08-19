@@ -10,6 +10,7 @@ int lasttime = 0;
 
 
 //Initializing Force Sensing Resistors
+//change pin numbers here to reorder data being sent
 int fsr1 = 36;
 int fsr2 = 39;
 int fsr3 = 33;
@@ -29,13 +30,13 @@ const char* server = "http://10.31.109.219:5000/parkinsons";
 
 //Delay or Frequency
 unsigned long lastTime = 0;
-unsigned long Delay = 200;
+unsigned long Delay = 0;
 bool checker = true;
 
 void setup() {
   Serial.begin(115200);
 
-  // Try to initialize!
+  // TInitialize MPU6050
   if (!mpu.begin()) {
     Serial.println("Failed to find MPU6050 chip");
     while (1) {
@@ -44,6 +45,7 @@ void setup() {
   }
   Serial.println("MPU6050 Found!");
 
+  //Adjust range and filter bandwidth for MPU6050
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
 
   mpu.setGyroRange(MPU6050_RANGE_500_DEG);
@@ -53,6 +55,7 @@ void setup() {
   Serial.println("");
   delay(100);
 
+  //Connect to WIFI
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
   while(WiFi.status() != WL_CONNECTED) {
@@ -80,7 +83,6 @@ void loop() {
       http.begin(client, server);
 
       while (checker) {
-      // do something repetitive 200 times
       //ForceData Acquisition
       ForceData = String(analogRead(fsr1));
       ForceData = ForceData + ", " + String(analogRead(fsr2));
@@ -105,50 +107,20 @@ void loop() {
       http.addHeader("Content-Type", "application/x-www-form-urlencoded");
       // ForceData to send with HTTP POST
       String httpRequestData = "force_values=" + ForceData + "&gyro_values=" + GyroData + "&accel_values=" + AccelData;           
-      // Send HTTP POST request
 
+      // Send HTTP POST request
       lasttime = millis();
-      int httpResponseCode = http.POST(httpRequestData);
-      Serial.println(millis()-lasttime);
-     
-      //Serial.print("HTTP Response code: ");
-      //Serial.println(httpResponseCode);
-      delay(0);
-      }
-
-      /*//ForceData Acquisition
-      ForceData = String(analogRead(fsr1));
-      ForceData = ForceData + ", " + String(analogRead(fsr2));
-      ForceData = ForceData + ", " + String(analogRead(fsr3));
-      ForceData = ForceData + ", " + String(analogRead(fsr4));
-      ForceData = ForceData + ", " + String(analogRead(fsr5));
-      ForceData = ForceData + ", " + String(analogRead(fsr6));
-
-      //GyroData Acquistion
-      sensors_event_t a, g, temp;
-      mpu.getEvent(&a, &g, &temp);
-
-      AccelData = String(a.acceleration.x);
-      AccelData = AccelData + ", " + String(a.acceleration.y);
-      AccelData = AccelData + ", " + String(a.acceleration.z);
-
-      GyroData = String(g.gyro.x);
-      GyroData = GyroData + "," + String(g.gyro.y);
-      GyroData = GyroData + "," + String(g.gyro.z);
-
-      // Specify content-type header
-      http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-      // ForceData to send with HTTP POST
-      String httpRequestData = "force_values=" + ForceData + "&gyro_values=" + GyroData + "&accel_values=" + AccelData;           
-      // Send HTTP POST request
       int httpResponseCode = http.POST(httpRequestData);
      
       Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);*/
+      Serial.println(httpResponseCode);
+      delay(Delay);
+
+      //insert code here to stop loop by setting checker to "false" if needed
+      }
         
       // Free resources
       http.end();
-      Serial.println("F ");
     }
     else {
       Serial.println("WiFi Disconnected");
