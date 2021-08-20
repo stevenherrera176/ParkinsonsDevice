@@ -26,7 +26,7 @@ const char* ssid = "MIT";
 const char* password = "";
 
 //Server Names
-const char* server = "http://10.31.109.219:5000/parkinsons";
+const char* server = "http://10.31.106.194:5000/parkinsons";
 
 //Delay or Frequency
 unsigned long lastTime = 0;
